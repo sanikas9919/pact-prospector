@@ -1,0 +1,4 @@
+project_id = "wjvupguxuuhvtxsutsib"
+
+[functions.extract-contract]
+verify_jwt = false
