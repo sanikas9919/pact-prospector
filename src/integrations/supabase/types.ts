@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      contract_analyses: {
+        Row: {
+          contract_id: string
+          created_at: string
+          financial_exposure: Json | null
+          id: string
+          legal_risks: Json | null
+          payment_delay_flags: Json | null
+          role_summaries: Json | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          financial_exposure?: Json | null
+          id?: string
+          legal_risks?: Json | null
+          payment_delay_flags?: Json | null
+          role_summaries?: Json | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          financial_exposure?: Json | null
+          id?: string
+          legal_risks?: Json | null
+          payment_delay_flags?: Json | null
+          role_summaries?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_analyses_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: true
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           billing_amount: string | null

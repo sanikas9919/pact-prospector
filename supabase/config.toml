@@ -2,3 +2,6 @@ project_id = "wjvupguxuuhvtxsutsib"
 
 [functions.extract-contract]
 verify_jwt = false
+
+[functions.analyze-contract]
+verify_jwt = false

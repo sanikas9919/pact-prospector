@@ -15,6 +15,7 @@ import {
   RefreshCw,
   FileText,
   ClipboardList,
+  Shield,
 } from "lucide-react";
 
 export default function ContractDetail() {
@@ -90,6 +91,12 @@ export default function ContractDetail() {
               <Copy className="mr-2 h-4 w-4" />
               Generate Execution Summary
             </Button>
+            <Link to={`/contract/${id}/analysis`}>
+              <Button size="sm" variant="secondary">
+                <Shield className="mr-2 h-4 w-4" />
+                AI Analysis
+              </Button>
+            </Link>
           </div>
         </div>
 
