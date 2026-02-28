@@ -32,7 +32,10 @@ import {
   Calendar,
   Shield,
   AlertTriangle,
+  Play,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const [contracts, setContracts] = useState<any[]>([]);
@@ -40,6 +43,21 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [runningAgent, setRunningAgent] = useState(false);
+
+  const handleRunAllAnalyses = async () => {
+    setRunningAgent(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("run-all-analyses");
+      if (error) throw error;
+      toast.success(`Processed ${data.processed} contracts (${data.failed} failed)`);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message || "Agent failed");
+    } finally {
+      setRunningAgent(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -99,6 +117,18 @@ export default function Dashboard() {
             >
               <Download className="mr-2 h-4 w-4" />
               Export Excel
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleRunAllAnalyses}
+              disabled={runningAgent || contracts.length === 0}
+            >
+              {runningAgent ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="mr-2 h-4 w-4" />
+              )}
+              Analyze All
             </Button>
             <Link to="/upload">
               <Button>
