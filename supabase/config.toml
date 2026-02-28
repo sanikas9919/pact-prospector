@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.analyze-contract]
 verify_jwt = false
+
+[functions.run-all-analyses]
+verify_jwt = false
