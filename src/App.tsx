@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import UploadPage from "./pages/UploadPage";
 import ContractDetail from "./pages/ContractDetail";
+import ContractAnalysis from "./pages/ContractAnalysis";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/contract/:id" element={<ContractDetail />} />
+          <Route path="/contract/:id/analysis" element={<ContractAnalysis />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

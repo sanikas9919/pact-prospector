@@ -30,24 +30,28 @@ import {
   BarChart3,
   DollarSign,
   Calendar,
+  Shield,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function Dashboard() {
   const [contracts, setContracts] = useState<any[]>([]);
+  const [analyses, setAnalyses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("all");
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchContracts();
+    fetchData();
   }, []);
 
-  const fetchContracts = async () => {
-    const { data, error } = await supabase
-      .from("contracts")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error && data) setContracts(data);
+  const fetchData = async () => {
+    const [contractsRes, analysesRes] = await Promise.all([
+      supabase.from("contracts").select("*").order("created_at", { ascending: false }),
+      supabase.from("contract_analyses").select("*"),
+    ]);
+    if (!contractsRes.error && contractsRes.data) setContracts(contractsRes.data);
+    if (!analysesRes.error && analysesRes.data) setAnalyses(analysesRes.data);
     setLoading(false);
   };
 
@@ -64,6 +68,17 @@ export default function Dashboard() {
     const val = parseFloat(c.total_contract_value?.replace(/[^0-9.]/g, "") || "0");
     return sum + val;
   }, 0);
+
+  // Aggregate risk metrics
+  const highRiskCount = analyses.reduce((sum, a) => {
+    const legalHigh = (a.legal_risks as any[])?.filter((r: any) => r.severity === "high").length || 0;
+    const paymentHigh = (a.payment_delay_flags as any[])?.filter((r: any) => r.severity === "high").length || 0;
+    return sum + legalHigh + paymentHigh;
+  }, 0);
+
+  const highExposureCount = analyses.filter(
+    (a) => (a.financial_exposure as any)?.risk_level === "high"
+  ).length;
 
   return (
     <AppLayout>
@@ -95,7 +110,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard
             icon={BarChart3}
             label="Total Contracts"
@@ -103,7 +118,7 @@ export default function Dashboard() {
           />
           <StatCard
             icon={DollarSign}
-            label="Total Portfolio Value"
+            label="Portfolio Value"
             value={totalValue > 0 ? `$${totalValue.toLocaleString()}` : "—"}
           />
           <StatCard
@@ -112,6 +127,18 @@ export default function Dashboard() {
             value={
               new Set(contracts.map((c) => c.contract_type).filter(Boolean)).size.toString()
             }
+          />
+          <StatCard
+            icon={Shield}
+            label="High Risks"
+            value={highRiskCount.toString()}
+            alert={highRiskCount > 0}
+          />
+          <StatCard
+            icon={AlertTriangle}
+            label="High Exposure"
+            value={highExposureCount.toString()}
+            alert={highExposureCount > 0}
           />
         </div>
 
@@ -214,11 +241,12 @@ function StatCard({
   icon: any;
   label: string;
   value: string;
+  alert?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10">
-        <Icon className="h-5 w-5 text-accent" />
+    <div className={`rounded-xl border bg-card p-5 flex items-center gap-4 ${alert ? "border-destructive/40" : "border-border"}`}>
+      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${alert ? "bg-destructive/10" : "bg-accent/10"}`}>
+        <Icon className={`h-5 w-5 ${alert ? "text-destructive" : "text-accent"}`} />
       </div>
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
