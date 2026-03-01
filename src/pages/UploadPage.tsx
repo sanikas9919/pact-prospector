@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
@@ -6,6 +6,7 @@ import { FileDropZone } from "@/components/FileDropZone";
 import { ContractForm, type ContractData } from "@/components/ContractForm";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
+import { useVoiceCommand } from "@/hooks/use-voice-command";
 
 const emptyData: ContractData = {
   contract_period: { start_date: null, end_date: null },
@@ -22,6 +23,29 @@ export default function UploadPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [extracted, setExtracted] = useState<ContractData | null>(null);
   const [fileName, setFileName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const openFilePicker = useCallback(() => {
+    if (isProcessing) return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,.docx";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) handleFileSelect(file);
+    };
+    input.click();
+  }, [isProcessing]);
+
+  const { isListening, transcript, isSupported, toggleListening } = useVoiceCommand({
+    onCommand: (cmd) => {
+      if (cmd === "upload") {
+        toast.info("Voice command: opening file picker…");
+        openFilePicker();
+      }
+    },
+    keywords: ["upload"],
+  });
 
   const handleFileSelect = async (file: File) => {
     const validTypes = [
@@ -138,7 +162,14 @@ export default function UploadPage() {
           </p>
         </div>
 
-        <FileDropZone onFileSelect={handleFileSelect} isProcessing={isProcessing} />
+        <FileDropZone
+          onFileSelect={handleFileSelect}
+          isProcessing={isProcessing}
+          isListening={isListening}
+          transcript={transcript}
+          isVoiceSupported={isSupported}
+          onToggleVoice={toggleListening}
+        />
 
         {extracted && (
           <div className="space-y-4">
