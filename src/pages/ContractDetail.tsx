@@ -5,6 +5,7 @@ import AppLayout from "@/components/AppLayout";
 import { ContractTypeBadge } from "@/components/ContractTypeBadge";
 import { exportToExcel, generateExecutionSummary } from "@/lib/export";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -25,6 +26,7 @@ export default function ContractDetail() {
   const [contract, setContract] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [revisions, setRevisions] = useState<any[]>([]);
+  const [previousRevision, setPreviousRevision] = useState<any>(null);
 
   useEffect(() => {
     if (id) fetchContract();
@@ -42,10 +44,20 @@ export default function ContractDetail() {
       const parentId = (data as any).parent_contract_id || data.id;
       const { data: revs } = await supabase
         .from("contracts")
-        .select("id, uploaded_file_name, revision_number, created_at")
+        .select("*")
         .or(`id.eq.${parentId},parent_contract_id.eq.${parentId}`)
         .order("revision_number", { ascending: true });
       setRevisions(revs || []);
+
+      // Find previous revision for diff
+      if (revs && data.revision_number > 0) {
+        const prevRev = revs.find(
+          (r: any) => r.revision_number === data.revision_number - 1
+        );
+        setPreviousRevision(prevRev || null);
+      } else {
+        setPreviousRevision(null);
+      }
     }
     setLoading(false);
   };
@@ -167,6 +179,11 @@ export default function ContractDetail() {
           </p>
         </div>
 
+        {/* Revision Changes */}
+        {previousRevision && (
+          <RevisionChanges current={contract} previous={previousRevision} />
+        )}
+
         {/* Revision History */}
         {revisions.length > 1 && (
           <div className="rounded-xl border border-border bg-card p-6">
@@ -219,6 +236,68 @@ function DetailItem({
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
         <p className="text-sm font-medium text-foreground">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+const COMPARE_FIELDS = [
+  { key: "total_contract_value", label: "Total Contract Value" },
+  { key: "billing_cycle", label: "Billing Cycle" },
+  { key: "billing_amount", label: "Billing Amount" },
+  { key: "start_date", label: "Start Date" },
+  { key: "end_date", label: "End Date" },
+  { key: "contract_type", label: "Contract Type" },
+  { key: "scope_of_work", label: "Scope of Work" },
+];
+
+function RevisionChanges({ current, previous }: { current: any; previous: any }) {
+  const changes = COMPARE_FIELDS.filter(
+    (f) => (current[f.key] || "") !== (previous[f.key] || "")
+  );
+
+  if (changes.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <GitBranch className="h-5 w-5 text-accent" />
+          <h2 className="text-base font-semibold">Changes from Rev {previous.revision_number}</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">No field changes detected between revisions.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <GitBranch className="h-5 w-5 text-accent" />
+        <h2 className="text-base font-semibold">
+          Changes from Rev {previous.revision_number} → Rev {current.revision_number}
+        </h2>
+      </div>
+      <div className="space-y-4">
+        {changes.map((field) => (
+          <div key={field.key} className="rounded-lg border border-border overflow-hidden">
+            <div className="bg-muted/40 px-4 py-2">
+              <span className="text-xs font-semibold text-foreground">{field.label}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+              <div className="px-4 py-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Previous (Rev {previous.revision_number})</p>
+                <p className="text-sm text-muted-foreground line-through whitespace-pre-wrap">
+                  {previous[field.key] || "—"}
+                </p>
+              </div>
+              <div className="px-4 py-3 bg-accent/5">
+                <p className="text-[10px] uppercase tracking-wider text-accent mb-1">Current (Rev {current.revision_number})</p>
+                <p className="text-sm text-foreground font-medium whitespace-pre-wrap">
+                  {current[field.key] || "—"}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
