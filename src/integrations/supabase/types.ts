@@ -60,6 +60,8 @@ export type Database = {
           created_at: string
           end_date: string | null
           id: string
+          parent_contract_id: string | null
+          revision_number: number
           scope_of_work: string | null
           start_date: string | null
           total_contract_value: string | null
@@ -72,6 +74,8 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          parent_contract_id?: string | null
+          revision_number?: number
           scope_of_work?: string | null
           start_date?: string | null
           total_contract_value?: string | null
@@ -84,12 +88,22 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          parent_contract_id?: string | null
+          revision_number?: number
           scope_of_work?: string | null
           start_date?: string | null
           total_contract_value?: string | null
           uploaded_file_name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contracts_parent_contract_id_fkey"
+            columns: ["parent_contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

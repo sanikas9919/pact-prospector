@@ -5,6 +5,7 @@ import AppLayout from "@/components/AppLayout";
 import { ContractTypeBadge } from "@/components/ContractTypeBadge";
 import { exportToExcel, generateExecutionSummary } from "@/lib/export";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -16,12 +17,14 @@ import {
   FileText,
   ClipboardList,
   Shield,
+  GitBranch,
 } from "lucide-react";
 
 export default function ContractDetail() {
   const { id } = useParams<{ id: string }>();
   const [contract, setContract] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [revisions, setRevisions] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) fetchContract();
@@ -33,7 +36,17 @@ export default function ContractDetail() {
       .select("*")
       .eq("id", id)
       .single();
-    if (!error && data) setContract(data);
+    if (!error && data) {
+      setContract(data);
+      // Fetch all revisions in the same family
+      const parentId = (data as any).parent_contract_id || data.id;
+      const { data: revs } = await supabase
+        .from("contracts")
+        .select("id, uploaded_file_name, revision_number, created_at")
+        .or(`id.eq.${parentId},parent_contract_id.eq.${parentId}`)
+        .order("revision_number", { ascending: true });
+      setRevisions(revs || []);
+    }
     setLoading(false);
   };
 
@@ -153,6 +166,39 @@ export default function ContractDetail() {
             {contract.scope_of_work || "No scope of work available."}
           </p>
         </div>
+
+        {/* Revision History */}
+        {revisions.length > 1 && (
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <GitBranch className="h-5 w-5 text-accent" />
+              <h2 className="text-base font-semibold">Revision History</h2>
+            </div>
+            <div className="space-y-2">
+              {revisions.map((rev) => (
+                <Link
+                  key={rev.id}
+                  to={`/contract/${rev.id}`}
+                  className={`flex items-center justify-between rounded-lg p-3 transition-colors ${
+                    rev.id === id
+                      ? "bg-primary/10 border border-primary/30"
+                      : "bg-muted/30 hover:bg-muted/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Badge variant={rev.id === id ? "default" : "outline"} className="text-xs">
+                      Rev {rev.revision_number}
+                    </Badge>
+                    <span className="text-sm font-medium">{rev.uploaded_file_name}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(rev.created_at).toLocaleDateString()}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </AppLayout>
   );

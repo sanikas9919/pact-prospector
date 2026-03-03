@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { ContractTypeBadge } from "@/components/ContractTypeBadge";
 import { exportToExcel } from "@/lib/export";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -233,7 +234,12 @@ export default function Dashboard() {
                 {filtered.map((c) => (
                   <TableRow key={c.id} className="hover:bg-muted/20 transition-colors">
                     <TableCell className="font-medium max-w-[200px] truncate">
-                      {c.uploaded_file_name}
+                      <div className="flex items-center gap-2">
+                        {c.uploaded_file_name}
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                          Rev {(c as any).revision_number ?? 0}
+                        </Badge>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <ContractTypeBadge type={c.contract_type} />

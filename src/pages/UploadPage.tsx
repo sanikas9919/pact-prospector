@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
@@ -7,6 +7,15 @@ import { ContractForm, type ContractData } from "@/components/ContractForm";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 import { useVoiceCommand } from "@/hooks/use-voice-command";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const emptyData: ContractData = {
   contract_period: { start_date: null, end_date: null },
@@ -24,6 +33,23 @@ export default function UploadPage() {
   const [extracted, setExtracted] = useState<ContractData | null>(null);
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isRevision, setIsRevision] = useState(false);
+  const [parentContractId, setParentContractId] = useState<string | null>(null);
+  const [existingContracts, setExistingContracts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isRevision) {
+      supabase
+        .from("contracts")
+        .select("id, uploaded_file_name, revision_number")
+        .order("uploaded_file_name")
+        .then(({ data }) => {
+          // Only show root contracts (revision 0 or those without parent)
+          const roots = (data || []).filter((c: any) => c.revision_number === 0);
+          setExistingContracts(roots);
+        });
+    }
+  }, [isRevision]);
 
   const openFilePicker = useCallback(() => {
     if (isProcessing) return;
@@ -129,6 +155,21 @@ export default function UploadPage() {
     setIsSaving(true);
 
     try {
+      let revisionNumber = 0;
+      let parentId = null;
+
+      if (isRevision && parentContractId) {
+        parentId = parentContractId;
+        // Get the max revision number for this parent
+        const { data: revisions } = await supabase
+          .from("contracts")
+          .select("revision_number")
+          .or(`id.eq.${parentContractId},parent_contract_id.eq.${parentContractId}`)
+          .order("revision_number", { ascending: false })
+          .limit(1);
+        revisionNumber = ((revisions?.[0] as any)?.revision_number || 0) + 1;
+      }
+
       const { error } = await supabase.from("contracts").insert({
         start_date: extracted.contract_period.start_date,
         end_date: extracted.contract_period.end_date,
@@ -138,7 +179,9 @@ export default function UploadPage() {
         billing_amount: extracted.billing_amount,
         scope_of_work: extracted.scope_of_work,
         uploaded_file_name: fileName,
-      });
+        parent_contract_id: parentId,
+        revision_number: revisionNumber,
+      } as any);
 
       if (error) throw error;
 
@@ -160,6 +203,37 @@ export default function UploadPage() {
           <p className="text-sm text-muted-foreground mt-1">
             Upload a PDF or DOCX contract to extract key details using AI
           </p>
+        </div>
+
+        {/* Revision toggle */}
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <Switch
+              id="revision-toggle"
+              checked={isRevision}
+              onCheckedChange={(checked) => {
+                setIsRevision(checked);
+                if (!checked) setParentContractId(null);
+              }}
+            />
+            <Label htmlFor="revision-toggle" className="text-sm font-medium">
+              This is a revision of an existing contract
+            </Label>
+          </div>
+          {isRevision && (
+            <Select value={parentContractId || ""} onValueChange={setParentContractId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select parent contract..." />
+              </SelectTrigger>
+              <SelectContent>
+                {existingContracts.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.uploaded_file_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         <FileDropZone
