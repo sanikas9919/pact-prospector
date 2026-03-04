@@ -1,6 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Clock, Plus, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -135,6 +137,66 @@ export function ContractForm({ data, onChange, onSave, isSaving }: ContractFormP
           className="resize-none"
         />
       </div>
+
+      {/* Project Phases */}
+      {data.project_phases && data.project_phases.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              Project Timeline / Phases
+            </Label>
+          </div>
+          <div className="space-y-2">
+            {data.project_phases.map((phase, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
+                <div className="flex-1 grid gap-2 sm:grid-cols-3">
+                  <Input
+                    value={phase.name}
+                    onChange={(e) => {
+                      const phases = [...data.project_phases!];
+                      phases[i] = { ...phases[i], name: e.target.value };
+                      update("project_phases", phases);
+                    }}
+                    placeholder="Phase name"
+                    className="text-sm"
+                  />
+                  <Input
+                    value={phase.duration}
+                    onChange={(e) => {
+                      const phases = [...data.project_phases!];
+                      phases[i] = { ...phases[i], duration: e.target.value };
+                      update("project_phases", phases);
+                    }}
+                    placeholder="Duration"
+                    className="text-sm"
+                  />
+                  <Input
+                    value={phase.description || ""}
+                    onChange={(e) => {
+                      const phases = [...data.project_phases!];
+                      phases[i] = { ...phases[i], description: e.target.value || null };
+                      update("project_phases", phases);
+                    }}
+                    placeholder="Description (optional)"
+                    className="text-sm"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const phases = data.project_phases!.filter((_, idx) => idx !== i);
+                    update("project_phases", phases.length ? phases : null);
+                  }}
+                  className="text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Button onClick={onSave} disabled={isSaving} className="w-full sm:w-auto">
         {isSaving ? (
