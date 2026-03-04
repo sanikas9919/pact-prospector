@@ -19,6 +19,7 @@ import {
   ClipboardList,
   Shield,
   GitBranch,
+  Clock,
 } from "lucide-react";
 
 export default function ContractDetail() {
@@ -178,6 +179,13 @@ export default function ContractDetail() {
             {contract.scope_of_work || "No scope of work available."}
           </p>
         </div>
+
+        {/* Project Phases */}
+        <ProjectPhasesSection
+          phases={contract.project_phases as any[] | null}
+          previousPhases={previousRevision?.project_phases as any[] | null}
+          hasRevision={!!previousRevision}
+        />
 
         {/* Revision Changes */}
         {previousRevision && (
