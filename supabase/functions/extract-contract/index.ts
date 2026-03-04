@@ -35,6 +35,7 @@ RULES:
 - For dates, use ISO format (YYYY-MM-DD) when possible.
 - For monetary values, include currency symbol if mentioned.
 - The scope_of_work should be a 5-10 line execution-team friendly summary.
+- For project_phases: extract any timeline, milestones, phases, or deliverable schedule mentioned in the contract. Each phase should have a name, duration (e.g. "2 weeks", "1 month"), and optional description. If no phases/timeline found, return null.
 
 You MUST call the extract_contract_data function with the extracted data.`;
 
@@ -72,6 +73,19 @@ You MUST call the extract_contract_data function with the extracted data.`;
                   billing_cycle: { type: "string", nullable: true },
                   billing_amount: { type: "string", nullable: true },
                   scope_of_work: { type: "string", nullable: true },
+                  project_phases: {
+                    type: "array",
+                    nullable: true,
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string", description: "Phase name, e.g. UI Design, Development, Testing" },
+                        duration: { type: "string", description: "Duration, e.g. 2 weeks, 1 month" },
+                        description: { type: "string", nullable: true, description: "Brief description of this phase" },
+                      },
+                      required: ["name", "duration"],
+                    },
+                  },
                 },
                 required: [
                   "contract_period",
@@ -80,6 +94,7 @@ You MUST call the extract_contract_data function with the extracted data.`;
                   "billing_cycle",
                   "billing_amount",
                   "scope_of_work",
+                  "project_phases",
                 ],
                 additionalProperties: false,
               },

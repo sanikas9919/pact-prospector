@@ -19,6 +19,7 @@ import {
   ClipboardList,
   Shield,
   GitBranch,
+  Clock,
 } from "lucide-react";
 
 export default function ContractDetail() {
@@ -179,6 +180,13 @@ export default function ContractDetail() {
           </p>
         </div>
 
+        {/* Project Phases */}
+        <ProjectPhasesSection
+          phases={contract.project_phases as any[] | null}
+          previousPhases={previousRevision?.project_phases as any[] | null}
+          hasRevision={!!previousRevision}
+        />
+
         {/* Revision Changes */}
         {previousRevision && (
           <RevisionChanges current={contract} previous={previousRevision} />
@@ -298,6 +306,110 @@ function RevisionChanges({ current, previous }: { current: any; previous: any })
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+interface Phase {
+  name: string;
+  duration: string;
+  description?: string | null;
+}
+
+function ProjectPhasesSection({
+  phases,
+  previousPhases,
+  hasRevision,
+}: {
+  phases: Phase[] | null;
+  previousPhases: Phase[] | null;
+  hasRevision: boolean;
+}) {
+  if (!phases || phases.length === 0) return null;
+
+  // Build a map of previous phases by name for diff
+  const prevMap = new Map<string, Phase>();
+  if (previousPhases) {
+    previousPhases.forEach((p) => prevMap.set(p.name, p));
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="h-5 w-5 text-accent" />
+        <h2 className="text-base font-semibold">Project Timeline</h2>
+      </div>
+      <div className="space-y-3">
+        {phases.map((phase, i) => {
+          const prev = prevMap.get(phase.name);
+          const isNew = hasRevision && !prev;
+          const durationChanged = hasRevision && prev && prev.duration !== phase.duration;
+
+          return (
+            <div
+              key={i}
+              className={`flex items-center gap-4 rounded-lg border p-4 ${
+                isNew
+                  ? "border-success/40 bg-success/5"
+                  : durationChanged
+                  ? "border-warning/40 bg-warning/5"
+                  : "border-border bg-muted/30"
+              }`}
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold shrink-0">
+                {i + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-foreground">{phase.name}</p>
+                  {isNew && (
+                    <Badge variant="outline" className="text-[10px] bg-success/15 text-success border-success/30">
+                      NEW
+                    </Badge>
+                  )}
+                  {durationChanged && (
+                    <Badge variant="outline" className="text-[10px] bg-warning/15 text-warning border-warning/30">
+                      CHANGED
+                    </Badge>
+                  )}
+                </div>
+                {phase.description && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{phase.description}</p>
+                )}
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-sm font-medium text-foreground">{phase.duration}</p>
+                {durationChanged && prev && (
+                  <p className="text-xs text-muted-foreground line-through">{prev.duration}</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Show removed phases from previous revision */}
+        {hasRevision && previousPhases && previousPhases
+          .filter((p) => !phases.find((c) => c.name === p.name))
+          .map((removed, i) => (
+            <div
+              key={`removed-${i}`}
+              className="flex items-center gap-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4 opacity-60"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive text-sm font-bold shrink-0">
+                ✕
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-muted-foreground line-through">{removed.name}</p>
+                  <Badge variant="outline" className="text-[10px] bg-destructive/15 text-destructive border-destructive/30">
+                    REMOVED
+                  </Badge>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground line-through">{removed.duration}</p>
+            </div>
+          ))}
       </div>
     </div>
   );

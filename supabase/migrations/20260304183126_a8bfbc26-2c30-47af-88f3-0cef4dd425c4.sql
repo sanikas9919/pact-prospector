@@ -1,0 +1,1 @@
+ALTER TABLE public.contracts ADD COLUMN project_phases jsonb DEFAULT NULL;

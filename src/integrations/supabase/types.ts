@@ -61,6 +61,7 @@ export type Database = {
           end_date: string | null
           id: string
           parent_contract_id: string | null
+          project_phases: Json | null
           revision_number: number
           scope_of_work: string | null
           start_date: string | null
@@ -75,6 +76,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           parent_contract_id?: string | null
+          project_phases?: Json | null
           revision_number?: number
           scope_of_work?: string | null
           start_date?: string | null
@@ -89,6 +91,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           parent_contract_id?: string | null
+          project_phases?: Json | null
           revision_number?: number
           scope_of_work?: string | null
           start_date?: string | null
