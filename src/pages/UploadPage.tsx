@@ -24,6 +24,7 @@ const emptyData: ContractData = {
   billing_cycle: null,
   billing_amount: null,
   scope_of_work: null,
+  project_phases: null,
 };
 
 export default function UploadPage() {
@@ -114,6 +115,7 @@ export default function UploadPage() {
         billing_cycle: data.billing_cycle,
         billing_amount: data.billing_amount,
         scope_of_work: data.scope_of_work,
+        project_phases: data.project_phases || null,
       });
 
       toast.success("Contract analyzed successfully!");
@@ -178,6 +180,7 @@ export default function UploadPage() {
         billing_cycle: extracted.billing_cycle,
         billing_amount: extracted.billing_amount,
         scope_of_work: extracted.scope_of_work,
+        project_phases: extracted.project_phases,
         uploaded_file_name: fileName,
         parent_contract_id: parentId,
         revision_number: revisionNumber,

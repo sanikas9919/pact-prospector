@@ -11,6 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Save, Loader2 } from "lucide-react";
 
+export interface ProjectPhase {
+  name: string;
+  duration: string;
+  description?: string | null;
+}
+
 export interface ContractData {
   contract_period: { start_date: string | null; end_date: string | null };
   contract_type: string | null;
@@ -18,6 +24,7 @@ export interface ContractData {
   billing_cycle: string | null;
   billing_amount: string | null;
   scope_of_work: string | null;
+  project_phases: ProjectPhase[] | null;
 }
 
 interface ContractFormProps {
