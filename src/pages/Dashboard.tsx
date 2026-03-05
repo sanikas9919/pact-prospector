@@ -32,7 +32,6 @@ import {
   DollarSign,
   Calendar,
   Shield,
-  AlertTriangle,
   Play,
   Loader2,
 } from "lucide-react";
