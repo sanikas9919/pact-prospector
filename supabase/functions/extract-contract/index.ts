@@ -33,7 +33,7 @@ RULES:
 - If a value is not found, return null for that field.
 - Return ONLY a valid JSON object with the exact structure below.
 - For dates, use ISO format (YYYY-MM-DD) when possible.
-- For monetary values, include currency symbol if mentioned.
+- For monetary values, include currency symbol if mentioned. For Indian Rupees (₹/INR), always format using Indian numbering system (e.g., ₹1,50,000 for 1.5 lakhs, ₹2,50,00,000 for 2.5 crores). Also append the human-readable label like "₹25,00,000 (25 Lakhs)" or "₹1,50,00,000 (1.5 Crores)".
 - The scope_of_work should be a 5-10 line execution-team friendly summary.
 - For project_phases: extract any timeline, milestones, phases, or deliverable schedule mentioned in the contract. Each phase should have a name, duration (e.g. "2 weeks", "1 month"), and optional description. If no phases/timeline found, return null.
 
