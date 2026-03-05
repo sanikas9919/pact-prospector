@@ -236,7 +236,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell className="text-sm">{c.billing_cycle || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {c.start_date || "Not specified"} → {c.end_date || "Ongoing"}
+                      {c.start_date || "Not specified"} → {c.end_date || "TBD"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Link to={`/contract/${c.id}`}>
