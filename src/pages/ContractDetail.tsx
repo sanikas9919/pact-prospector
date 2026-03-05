@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { ContractTypeBadge } from "@/components/ContractTypeBadge";
 import { exportToExcel, generateExecutionSummary } from "@/lib/export";
-import { formatAmountInLakhsOrCr } from "@/lib/utils";
+import { formatAmountInLakhsOrCr, formatContractPeriod, orFallback } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -211,7 +211,7 @@ export default function ContractDetail() {
             <DetailItem
               icon={Calendar}
               label="Contract Period"
-              value={`${contract.start_date || "Not specified"} → ${contract.end_date || "Ongoing"}`}
+              value={formatContractPeriod(contract.start_date, contract.end_date)}
             />
             <DetailItem
               icon={DollarSign}
@@ -348,10 +348,11 @@ function RevisionChanges({ current, previous }: { current: any; previous: any })
       </div>
       <div className="space-y-4">
         {changes.map((field) => {
-          const formatVal = (v: any) =>
-            field.key === "total_contract_value"
-              ? formatAmountInLakhsOrCr(v, "—")
-              : (v || "—");
+          const formatVal = (v: any) => {
+            if (field.key === "total_contract_value") return formatAmountInLakhsOrCr(v, "—");
+            if (field.key === "start_date" || field.key === "end_date") return orFallback(v, "—");
+            return orFallback(v, "—");
+          };
           return (
             <div key={field.key} className="rounded-lg border border-border overflow-hidden">
               <div className="bg-muted/40 px-4 py-2">
