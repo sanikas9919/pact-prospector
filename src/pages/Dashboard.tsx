@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { ContractTypeBadge } from "@/components/ContractTypeBadge";
 import { exportToExcel } from "@/lib/export";
+import { formatAmountInLakhsOrCr, parseAmount } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +33,6 @@ import {
   DollarSign,
   Calendar,
   Shield,
-  AlertTriangle,
   Play,
   Loader2,
 } from "lucide-react";
@@ -83,10 +83,7 @@ export default function Dashboard() {
     return matchesType && matchesSearch;
   });
 
-  const totalValue = contracts.reduce((sum, c) => {
-    const val = parseFloat(c.total_contract_value?.replace(/[^0-9.]/g, "") || "0");
-    return sum + val;
-  }, 0);
+  const totalValue = contracts.reduce((sum, c) => sum + parseAmount(c.total_contract_value), 0);
 
   // Aggregate risk metrics
   const highRiskCount = analyses.reduce((sum, a) => {
@@ -94,10 +91,6 @@ export default function Dashboard() {
     const paymentHigh = (a.payment_delay_flags as any[])?.filter((r: any) => r.severity === "high").length || 0;
     return sum + legalHigh + paymentHigh;
   }, 0);
-
-  const highExposureCount = analyses.filter(
-    (a) => (a.financial_exposure as any)?.risk_level === "high"
-  ).length;
 
   return (
     <AppLayout>
@@ -141,7 +134,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             icon={BarChart3}
             label="Total Contracts"
@@ -150,7 +143,7 @@ export default function Dashboard() {
           <StatCard
             icon={DollarSign}
             label="Portfolio Value"
-            value={totalValue > 0 ? `$${totalValue.toLocaleString()}` : "—"}
+            value={formatAmountInLakhsOrCr(totalValue)}
           />
           <StatCard
             icon={Calendar}
@@ -164,12 +157,6 @@ export default function Dashboard() {
             label="High Risks"
             value={highRiskCount.toString()}
             alert={highRiskCount > 0}
-          />
-          <StatCard
-            icon={AlertTriangle}
-            label="High Exposure"
-            value={highExposureCount.toString()}
-            alert={highExposureCount > 0}
           />
         </div>
 
@@ -245,7 +232,7 @@ export default function Dashboard() {
                       <ContractTypeBadge type={c.contract_type} />
                     </TableCell>
                     <TableCell className="text-sm">
-                      {c.total_contract_value || "—"}
+                      {formatAmountInLakhsOrCr(c.total_contract_value)}
                     </TableCell>
                     <TableCell className="text-sm">{c.billing_cycle || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">

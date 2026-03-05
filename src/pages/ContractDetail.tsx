@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { ContractTypeBadge } from "@/components/ContractTypeBadge";
 import { exportToExcel, generateExecutionSummary } from "@/lib/export";
+import { formatAmountInLakhsOrCr } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -154,7 +155,7 @@ export default function ContractDetail() {
             <DetailItem
               icon={DollarSign}
               label="Total Value"
-              value={contract.total_contract_value || "Not specified"}
+              value={formatAmountInLakhsOrCr(contract.total_contract_value, "Not specified")}
             />
             <DetailItem
               icon={RefreshCw}
@@ -285,27 +286,33 @@ function RevisionChanges({ current, previous }: { current: any; previous: any })
         </h2>
       </div>
       <div className="space-y-4">
-        {changes.map((field) => (
-          <div key={field.key} className="rounded-lg border border-border overflow-hidden">
-            <div className="bg-muted/40 px-4 py-2">
-              <span className="text-xs font-semibold text-foreground">{field.label}</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
-              <div className="px-4 py-3">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Previous (Rev {previous.revision_number})</p>
-                <p className="text-sm text-muted-foreground line-through whitespace-pre-wrap">
-                  {previous[field.key] || "—"}
-                </p>
+        {changes.map((field) => {
+          const formatVal = (v: any) =>
+            field.key === "total_contract_value"
+              ? formatAmountInLakhsOrCr(v, "—")
+              : (v || "—");
+          return (
+            <div key={field.key} className="rounded-lg border border-border overflow-hidden">
+              <div className="bg-muted/40 px-4 py-2">
+                <span className="text-xs font-semibold text-foreground">{field.label}</span>
               </div>
-              <div className="px-4 py-3 bg-accent/5">
-                <p className="text-[10px] uppercase tracking-wider text-accent mb-1">Current (Rev {current.revision_number})</p>
-                <p className="text-sm text-foreground font-medium whitespace-pre-wrap">
-                  {current[field.key] || "—"}
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+                <div className="px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Previous (Rev {previous.revision_number})</p>
+                  <p className="text-sm text-muted-foreground line-through whitespace-pre-wrap">
+                    {formatVal(previous[field.key])}
+                  </p>
+                </div>
+                <div className="px-4 py-3 bg-accent/5">
+                  <p className="text-[10px] uppercase tracking-wider text-accent mb-1">Current (Rev {current.revision_number})</p>
+                  <p className="text-sm text-foreground font-medium whitespace-pre-wrap">
+                    {formatVal(current[field.key])}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
