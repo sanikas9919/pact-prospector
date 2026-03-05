@@ -210,7 +210,7 @@ export default function ContractDetail() {
             <DetailItem
               icon={Calendar}
               label="Contract Period"
-              value={`${contract.start_date || "TBD"} → ${contract.end_date || "TBD"}`}
+              value={`${contract.start_date || "Not specified"} → ${contract.end_date || "Ongoing"}`}
             />
             <DetailItem
               icon={DollarSign}
