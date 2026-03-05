@@ -20,6 +20,7 @@ import {
   Shield,
   GitBranch,
   Clock,
+  RotateCcw,
 } from "lucide-react";
 
 export default function ContractDetail() {
