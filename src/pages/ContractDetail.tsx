@@ -72,6 +72,56 @@ export default function ContractDetail() {
     toast.success("Execution summary copied to clipboard!");
   };
 
+  const handleReExtract = async () => {
+    if (!contract) return;
+    setReExtracting(true);
+    try {
+      // Fetch the stored document text by re-reading scope + all fields as context
+      // We'll send existing data to re-format via AI
+      const fieldsText = [
+        contract.scope_of_work,
+        `Total contract value: ${contract.total_contract_value}`,
+        `Billing amount: ${contract.billing_amount}`,
+        `Billing cycle: ${contract.billing_cycle}`,
+        `Contract type: ${contract.contract_type}`,
+        `Start date: ${contract.start_date}`,
+        `End date: ${contract.end_date}`,
+        contract.project_phases ? `Project phases: ${JSON.stringify(contract.project_phases)}` : "",
+      ].filter(Boolean).join("\n");
+
+      const { data, error } = await supabase.functions.invoke("extract-contract", {
+        body: { text: fieldsText },
+      });
+
+      if (error) throw error;
+
+      // Update the contract in DB
+      const { error: updateErr } = await supabase
+        .from("contracts")
+        .update({
+          total_contract_value: data.total_contract_value ?? contract.total_contract_value,
+          billing_amount: data.billing_amount ?? contract.billing_amount,
+          billing_cycle: data.billing_cycle ?? contract.billing_cycle,
+          contract_type: data.contract_type ?? contract.contract_type,
+          start_date: data.contract_period?.start_date ?? contract.start_date,
+          end_date: data.contract_period?.end_date ?? contract.end_date,
+          scope_of_work: data.scope_of_work ?? contract.scope_of_work,
+          project_phases: data.project_phases ?? contract.project_phases,
+        } as any)
+        .eq("id", contract.id);
+
+      if (updateErr) throw updateErr;
+
+      toast.success("Contract re-extracted with updated formatting!");
+      fetchContract(); // Refresh
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Re-extraction failed");
+    } finally {
+      setReExtracting(false);
+    }
+  };
+
   if (loading) {
     return (
       <AppLayout>
