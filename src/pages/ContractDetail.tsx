@@ -29,6 +29,7 @@ export default function ContractDetail() {
   const [loading, setLoading] = useState(true);
   const [revisions, setRevisions] = useState<any[]>([]);
   const [previousRevision, setPreviousRevision] = useState<any>(null);
+  const [reExtracting, setReExtracting] = useState(false);
 
   useEffect(() => {
     if (id) fetchContract();
