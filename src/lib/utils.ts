@@ -5,6 +5,24 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Treat null, undefined, "", "null", "undefined" as empty; return fallback */
+export function orFallback<T>(value: T | null | undefined, fallback: string): string {
+  if (value == null || value === "") return fallback;
+  const s = String(value).trim().toLowerCase();
+  if (s === "null" || s === "undefined") return fallback;
+  return String(value);
+}
+
+/** Format contract period: start → end, with sensible fallbacks for missing dates */
+export function formatContractPeriod(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined
+): string {
+  const start = orFallback(startDate, "Not specified");
+  const end = orFallback(endDate, "Ongoing");
+  return `${start} → ${end}`;
+}
+
 /** Parse numeric value from string (handles $500,000, ₹5L, 5 Lakh, 1.25 Cr, Rs. 14300/- for months 1-12, etc.) */
 export function parseAmount(value: string | number | null | undefined): number {
   if (value == null) return 0;

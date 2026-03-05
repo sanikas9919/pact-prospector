@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { formatAmountInLakhsOrCr } from "./utils";
+import { formatAmountInLakhsOrCr, orFallback } from "./utils";
 
 interface ContractRow {
   id: string;
@@ -18,8 +18,8 @@ export function exportToExcel(contracts: ContractRow[], filename = "contracts") 
   const rows = contracts.map((c) => ({
     "File Name": c.uploaded_file_name,
     "Contract Type": c.contract_type || "N/A",
-    "Start Date": c.start_date || "N/A",
-    "End Date": c.end_date || "N/A",
+    "Start Date": orFallback(c.start_date, "N/A"),
+    "End Date": orFallback(c.end_date, "N/A"),
     "Total Value": formatAmountInLakhsOrCr(c.total_contract_value, "N/A"),
     "Billing Cycle": c.billing_cycle || "N/A",
     "Billing Amount": c.billing_amount || "N/A",
@@ -41,7 +41,7 @@ export function generateExecutionSummary(contract: ContractRow): string {
     "",
     `📄 Contract: ${contract.uploaded_file_name}`,
     `📋 Type: ${contract.contract_type || "Not specified"}`,
-    `📅 Period: ${contract.start_date || "TBD"} → ${contract.end_date || "TBD"}`,
+    `📅 Period: ${orFallback(contract.start_date, "TBD")} → ${orFallback(contract.end_date, "TBD")}`,
     `💰 Value: ${formatAmountInLakhsOrCr(contract.total_contract_value, "Not specified")}`,
     `🔄 Billing: ${contract.billing_cycle || "N/A"} — ${contract.billing_amount || "N/A"}`,
     "",

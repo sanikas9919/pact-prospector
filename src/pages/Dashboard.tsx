@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "@/components/AppLayout";
 import { ContractTypeBadge } from "@/components/ContractTypeBadge";
 import { exportToExcel } from "@/lib/export";
-import { formatAmountInLakhsOrCr, parseAmount } from "@/lib/utils";
+import { formatAmountInLakhsOrCr, formatContractPeriod, parseAmount } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -236,7 +236,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell className="text-sm">{c.billing_cycle || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {c.start_date || "Not specified"} → {c.end_date || "TBD"}
+                      {formatContractPeriod(c.start_date, c.end_date)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Link to={`/contract/${c.id}`}>
