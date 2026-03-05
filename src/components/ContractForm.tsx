@@ -95,7 +95,7 @@ export function ContractForm({ data, onChange, onSave, isSaving }: ContractFormP
           <Input
             value={data.total_contract_value || ""}
             onChange={(e) => update("total_contract_value", e.target.value || null)}
-            placeholder="e.g. $500,000"
+            placeholder="e.g. ₹5 L or ₹1.25 Cr"
           />
         </div>
         <div className="space-y-2">
@@ -103,7 +103,7 @@ export function ContractForm({ data, onChange, onSave, isSaving }: ContractFormP
           <Input
             value={data.billing_amount || ""}
             onChange={(e) => update("billing_amount", e.target.value || null)}
-            placeholder="e.g. $50,000/month"
+            placeholder="e.g. ₹50,000/month"
           />
         </div>
       </div>
