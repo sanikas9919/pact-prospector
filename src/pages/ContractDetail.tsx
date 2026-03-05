@@ -156,7 +156,16 @@ export default function ContractDetail() {
               Back
             </Button>
           </Link>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReExtract}
+              disabled={reExtracting}
+            >
+              <RotateCcw className={`mr-2 h-4 w-4 ${reExtracting ? "animate-spin" : ""}`} />
+              {reExtracting ? "Re-extracting…" : "Re-extract"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
