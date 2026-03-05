@@ -95,9 +95,6 @@ export default function Dashboard() {
     return sum + legalHigh + paymentHigh;
   }, 0);
 
-  const highExposureCount = analyses.filter(
-    (a) => (a.financial_exposure as any)?.risk_level === "high"
-  ).length;
 
   return (
     <AppLayout>
@@ -141,7 +138,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             icon={BarChart3}
             label="Total Contracts"
@@ -164,12 +161,6 @@ export default function Dashboard() {
             label="High Risks"
             value={highRiskCount.toString()}
             alert={highRiskCount > 0}
-          />
-          <StatCard
-            icon={AlertTriangle}
-            label="High Exposure"
-            value={highExposureCount.toString()}
-            alert={highExposureCount > 0}
           />
         </div>
 
@@ -249,7 +240,7 @@ export default function Dashboard() {
                     </TableCell>
                     <TableCell className="text-sm">{c.billing_cycle || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {c.start_date || "?"} → {c.end_date || "?"}
+                      {c.start_date || "Not specified"} → {c.end_date || "Ongoing"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Link to={`/contract/${c.id}`}>
